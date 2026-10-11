@@ -27,6 +27,12 @@ it. `ruff format .` and `uv run ruff check . --fix` resolve most issues automati
 - When the work merges or is abandoned, always clean up: `git worktree remove
   ../demat-worktrees/feat-<slug>` and delete the branch locally (`git branch -d
   feat/<slug>`) — don't leave stale worktrees/branches lying around.
+- Releasing (ADR 0017): bump `version` in `pyproject.toml` and the `demat` entry's
+  `version` in `uv.lock` (check with `uv lock --check`; don't let a newer uv rewrite the
+  whole lockfile), merge that to `main`, then tag that commit `v<version>` — the tag must
+  match `pyproject.toml` exactly (`v1.2.0` ↔ `version = "1.2.0"`), or CI's `publish` job
+  fails before anything is published. The tag push publishes the public tag and updates
+  the Homebrew formula. Never reuse or move an existing tag.
 
 ## Code layout
 
