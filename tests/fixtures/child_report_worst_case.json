@@ -1,0 +1,275 @@
+{
+  "child": {
+    "assessment_id": 412,
+    "person_id": "K7QM",
+    "person_ref": "K7QM",
+    "display_label": "Lena Beispiel",
+    "overall_value": 78.0,
+    "overall_category": "überdurchschnittlich",
+    "overall_categories": null,
+    "classification_note": null,
+    "subtest_pr": {
+      "ZE": 81,
+      "LA": 79,
+      "AD": 85,
+      "SU": 64,
+      "DO": 67,
+      "DI": 71,
+      "HA": 43,
+      "GEL": 76,
+      "SA": 25,
+      "GEO": 53
+    },
+    "subtest_rw": {
+      "ZE": 2.0,
+      "LA": 4.0,
+      "AD": 4.0,
+      "SU": 3.0,
+      "DO": 3.0,
+      "DI": 4.0,
+      "HA": 2.0,
+      "GEL": 4.0,
+      "SA": 2.0,
+      "GEO": 2.0
+    },
+    "subtest_category": {},
+    "strengths": [],
+    "weaknesses": []
+  },
+  "assessment_id": 412,
+  "person_id": "K7QM",
+  "person_ref": "K7QM",
+  "display_name": null,
+  "klasse": "3E",
+  "test_version": "DEMAT 2+",
+  "test_key": "demat2plus",
+  "norm_test": "demat2plus",
+  "test_form": "A",
+  "test_date_iso": "2026-09-15",
+  "norm_variant": "k3",
+  "norm_variant_label": "3. Klasse, erste drei Schuljahresmonate, Übergangsform mit sehr langer Bezeichnung",
+  "classification_basis": "pr",
+  "classification_source": "Manual DEMAT 2+, Kap. 7.2, S. 24",
+  "confidence_level": "68 %",
+  "sheet_layout": "rows_with_profile",
+  "subtests": [
+    {
+      "key": "ZE",
+      "name": "Zahleneigenschaften",
+      "column_title": "ZE",
+      "rw_display": "2 (2)",
+      "pr": 81.0,
+      "pr_display": "81",
+      "pr_is_value": true,
+      "normed": true,
+      "category": null
+    },
+    {
+      "key": "LA",
+      "name": "Längenvergleich",
+      "column_title": "LA",
+      "rw_display": "4 (4)",
+      "pr": 79.0,
+      "pr_display": "79",
+      "pr_is_value": true,
+      "normed": true,
+      "category": null
+    },
+    {
+      "key": "AD",
+      "name": "Addition",
+      "column_title": "AD",
+      "rw_display": "4 (4)",
+      "pr": 85.0,
+      "pr_display": "85",
+      "pr_is_value": true,
+      "normed": true,
+      "category": null
+    },
+    {
+      "key": "SU",
+      "name": "Subtraktion",
+      "column_title": "SU",
+      "rw_display": "3 (4)",
+      "pr": 64.0,
+      "pr_display": "64",
+      "pr_is_value": true,
+      "normed": true,
+      "category": null
+    },
+    {
+      "key": "DO",
+      "name": "Verdoppeln",
+      "column_title": "DO",
+      "rw_display": "3 (3)",
+      "pr": 67.0,
+      "pr_display": "67",
+      "pr_is_value": true,
+      "normed": true,
+      "category": null
+    },
+    {
+      "key": "DI",
+      "name": "Division",
+      "column_title": "DI",
+      "rw_display": "4 (4)",
+      "pr": 71.0,
+      "pr_display": "71",
+      "pr_is_value": true,
+      "normed": true,
+      "category": null
+    },
+    {
+      "key": "HA",
+      "name": "Halbieren",
+      "column_title": "HA",
+      "rw_display": "2 (3)",
+      "pr": 43.0,
+      "pr_display": "43",
+      "pr_is_value": true,
+      "normed": true,
+      "category": null
+    },
+    {
+      "key": "GEL",
+      "name": "Rechnen mit Geld",
+      "column_title": "GEL",
+      "rw_display": "4 (4)",
+      "pr": 76.0,
+      "pr_display": "76",
+      "pr_is_value": true,
+      "normed": true,
+      "category": null
+    },
+    {
+      "key": "SA",
+      "name": "Sachaufgaben",
+      "column_title": "SA",
+      "rw_display": "2 (4)",
+      "pr": 25.0,
+      "pr_display": "25",
+      "pr_is_value": true,
+      "normed": true,
+      "category": null
+    },
+    {
+      "key": "GEO",
+      "name": "Geometrie",
+      "column_title": "GEO",
+      "rw_display": "2 (4)",
+      "pr": 53.0,
+      "pr_display": "53",
+      "pr_is_value": true,
+      "normed": true,
+      "category": null
+    }
+  ],
+  "rw_total_display": "30 (36)",
+  "overall_value": 78.0,
+  "overall_band_range": null,
+  "median_zone": [
+    26.0,
+    75.0
+  ],
+  "gesamt_fields": [
+    {
+      "label": "Prozentrang (ges)",
+      "display": "78",
+      "kind": "value",
+      "present": true
+    },
+    {
+      "label": "Prozentrang-Band (68 %)",
+      "display": "64–83",
+      "kind": "range",
+      "present": true
+    },
+    {
+      "label": "T-Wert (ges)",
+      "display": "58",
+      "kind": "value",
+      "present": true
+    },
+    {
+      "label": "T-Wert-Band (68 %)",
+      "display": "52–60",
+      "kind": "range",
+      "present": true
+    }
+  ],
+  "rating_categories": [
+    "sehr schwach",
+    "schwach",
+    "unterdurchschnittlich",
+    "durchschnittlich",
+    "überdurchschnittlich",
+    "ausgezeichnet"
+  ],
+  "rating_rank": 4,
+  "bands": [
+    {
+      "lo": 0.0,
+      "hi": 7.0,
+      "category": "sehr schwach",
+      "label": "0–7",
+      "open_low": true,
+      "open_high": false
+    },
+    {
+      "lo": 8.0,
+      "hi": 14.0,
+      "category": "schwach",
+      "label": "8–14",
+      "open_low": false,
+      "open_high": false
+    },
+    {
+      "lo": 15.0,
+      "hi": 29.0,
+      "category": "unterdurchschnittlich",
+      "label": "15–29",
+      "open_low": false,
+      "open_high": false
+    },
+    {
+      "lo": 30.0,
+      "hi": 70.0,
+      "category": "durchschnittlich",
+      "label": "30–70",
+      "open_low": false,
+      "open_high": false
+    },
+    {
+      "lo": 71.0,
+      "hi": 92.0,
+      "category": "überdurchschnittlich",
+      "label": "71–92",
+      "open_low": false,
+      "open_high": false
+    },
+    {
+      "lo": 93.0,
+      "hi": 100.0,
+      "category": "ausgezeichnet",
+      "label": "93–100",
+      "open_low": false,
+      "open_high": true
+    }
+  ],
+  "profile_mode": "categorised",
+  "profile_high": "**Über dem Durchschnittsbereich:** Addition (PR 85)",
+  "profile_low": "**Unter dem Durchschnittsbereich:** Sachaufgaben (PR 25, unterdurchschnittlich)",
+  "hint_lines": [
+    "Maßgeblich ist der Gesamtwert. Teilbereiche umfassen nur wenige Aufgaben und zeigen nur Tendenzen.",
+    "Das PR-Band umfasst den „wahren“ Wert mit etwa 68 % Wahrscheinlichkeit.",
+    "Screening-Ergebnis: Ein DEMAT-Ergebnis allein begründet keine Diagnose (Rechenstörung, Dyskalkulie).",
+    "Unter dem Durchschnitt empfehlen die Manuale eine genauere Diagnostik (z. B. Basiskompetenzen) und zeitnahe Förderung.",
+    "Normwert zum Gesamtwert (Rohwert 30) im Handbuch blass gedruckt („unsicher“) – bei Entscheidungen im Handbuch prüfen.",
+    "Hinweis: Klassenbezeichnung (3E) passt nicht zur gewählten Normtabelle k3_gesamt — bitte Klasse und Normtabelle prüfen."
+  ],
+  "notes_lines": 1,
+  "provenance_phrase": null,
+  "finalized_at": "2026-09-23",
+  "generated_at": "2026-09-27",
+  "template_version": "1"
+}

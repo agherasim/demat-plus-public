@@ -1,0 +1,233 @@
+#!/usr/bin/env bash
+# The `demat` command installed by the Homebrew formula (ADR 0017). The
+# formula installs the code into its libexec and wraps this script with
+# DEMAT_CODE_ROOT (the stable opt_libexec) and DEMAT_BIN (the stable opt
+# path of this command, which the generated .app calls).
+#
+#   demat setup [--non-interactive]   first-run: config.env, DEMAT+.app, smoke test
+#   demat run [--log]                 start the app and open the browser
+#   demat install-app [<path>]        (re)generate ~/Applications/DEMAT+.app
+#   demat uninstall-app [<path>]      remove it (run before `brew uninstall demat`)
+#
+# User data stays in $DEMAT_HOME (default ~/.demat, ADR 0009). The Python
+# environment lives in $DEMAT_HOME/venv, outside the versioned Homebrew
+# Cellar, so `brew upgrade` doesn't strand it; `uv run --frozen` re-syncs it
+# to the installed uv.lock on every start.
+set -euo pipefail
+
+CODE_ROOT="${DEMAT_CODE_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+DEMAT_HOME="${DEMAT_HOME:-$HOME/.demat}"
+DEMAT_BIN="${DEMAT_BIN:-$CODE_ROOT/packaging/demat}"
+CONFIG_ENV="$DEMAT_HOME/config.env"
+DEFAULT_APP_PATH="${DEMAT_APP_PATH:-$HOME/Applications/DEMAT+.app}"
+export DEMAT_HOME
+export UV_PROJECT_ENVIRONMENT="$DEMAT_HOME/venv"
+# Keep the Homebrew Cellar exactly as installed: no __pycache__ next to the code.
+export PYTHONPYCACHEPREFIX="$DEMAT_HOME/pycache"
+
+log() { printf '==> %s\n' "$1"; }
+stamp() { date '+%Y-%m-%d %H:%M:%S'; }
+
+usage() {
+  sed -n '7,11p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+}
+
+resolve_uv() {
+  local candidate
+  for candidate in /opt/homebrew/bin/uv /usr/local/bin/uv "$HOME/.local/bin/uv"; do
+    if [[ -x "$candidate" ]]; then
+      echo "$candidate"
+      return
+    fi
+  done
+  command -v uv 2>/dev/null || true
+}
+
+require_uv() {
+  UV="$(resolve_uv)"
+  if [[ -z "$UV" ]]; then
+    echo "error: uv not found; reinstall with \`brew reinstall demat\`." >&2
+    return 1
+  fi
+}
+
+# Never echo config.env's contents — it may hold ANTHROPIC_API_KEY. It may
+# also be hand-edited, so a stray unbound variable must not abort us.
+load_config() {
+  if [[ -f "$CONFIG_ENV" ]]; then
+    set +u
+    set -a
+    # shellcheck disable=SC1090
+    source "$CONFIG_ENV"
+    set +a
+    set -u
+  fi
+}
+
+uv_run() {
+  # --directory is what makes Streamlit find .streamlit/config.toml (theme +
+  # showErrorDetails = "none") regardless of the caller's working directory.
+  "$UV" run --frozen --no-dev --directory "$CODE_ROOT" "$@"
+}
+
+cmd_run() {
+  local to_log=0
+  [[ "${1:-}" == "--log" ]] && to_log=1
+
+  mkdir -p "$DEMAT_HOME/logs"
+  local log_file="$DEMAT_HOME/logs/launcher.log"
+  if [[ "$to_log" -eq 1 ]]; then
+    # Truncate once past ~1 MB; safe to paste into a bug report.
+    if [[ -f "$log_file" ]] && (($(stat -f%z "$log_file" 2>/dev/null || echo 0) > 1048576)); then
+      : >"$log_file"
+    fi
+    exec >>"$log_file" 2>&1
+  fi
+  echo "[$(stamp)] demat starting (DEMAT_HOME=$DEMAT_HOME, code=$CODE_ROOT)"
+
+  if ! require_uv; then
+    osascript -e "display alert \"DEMAT+ could not start\" message \"uv was not found on this Mac. See $log_file for details.\"" >/dev/null 2>&1 || true
+    exit 1
+  fi
+  load_config
+
+  local port="${DEMAT_PORT:-8701}"
+  local health="http://127.0.0.1:$port/_stcore/health"
+
+  # A server already answering means this is a second launch: just open
+  # the browser, don't start another server.
+  if curl -fsS --max-time 1 "$health" >/dev/null 2>&1; then
+    echo "[$(stamp)] server already running on port $port; opening browser"
+    open "http://127.0.0.1:$port"
+    exit 0
+  fi
+
+  # Background: wait for the server, then open the browser once. The first
+  # start after an install/upgrade also syncs the venv, hence the long wait.
+  (
+    for _ in $(seq 1 600); do
+      if curl -fsS --max-time 1 "$health" >/dev/null 2>&1; then
+        open "http://127.0.0.1:$port"
+        exit 0
+      fi
+      sleep 0.5
+    done
+    echo "[$(stamp)] timed out waiting for the server to start"
+    osascript -e "display alert \"DEMAT+ is taking too long to start\" message \"See $log_file for details.\"" >/dev/null 2>&1 || true
+  ) &
+
+  echo "[$(stamp)] starting server on port $port"
+  # exec: the .app's process becomes the server, so quitting it stops it.
+  exec "$UV" run --frozen --no-dev --directory "$CODE_ROOT" streamlit run app.py \
+    --server.port "$port" --server.address 127.0.0.1 --server.headless true \
+    --browser.gatherUsageStats false
+}
+
+cmd_install_app() {
+  local app_path="${1:-$DEFAULT_APP_PATH}"
+  DEMAT_BIN="$DEMAT_BIN" "$CODE_ROOT/packaging/make_app.sh" "$app_path"
+}
+
+cmd_uninstall_app() {
+  local app_path="${1:-$DEFAULT_APP_PATH}"
+  if [[ -d "$app_path" ]]; then
+    rm -rf "$app_path"
+    log "Removed $app_path"
+  else
+    echo "No DEMAT+ launcher at $app_path"
+  fi
+}
+
+write_config() {
+  local non_interactive="$1" api_key=""
+  if [[ -f "$CONFIG_ENV" ]]; then
+    log "$CONFIG_ENV already exists; leaving it untouched."
+    return
+  fi
+  if [[ "$non_interactive" -eq 0 && -t 0 ]]; then
+    printf 'Anthropic API key (input hidden; leave empty to add later): '
+    read -rs api_key
+    echo
+  fi
+  # Created at mode 600 (not write-then-chmod): it holds the key.
+  install -m 600 /dev/null "$CONFIG_ENV"
+  {
+    echo "DEMAT_RUNNER=direct"
+    echo "DEMAT_PORT=8701"
+    if [[ -n "$api_key" ]]; then
+      # Single-quoted: config.env is `source`d as shell, and only single
+      # quotes keep `$`, `#` and spaces literal. Embedded single quotes use
+      # the close/escape/reopen trick.
+      printf "ANTHROPIC_API_KEY='%s'\n" "${api_key//\'/\'\\\'\'}"
+    else
+      echo "# ANTHROPIC_API_KEY="
+    fi
+  } >"$CONFIG_ENV"
+  if [[ -z "$api_key" ]]; then
+    log "No API key set. Add it later in $CONFIG_ENV (ANTHROPIC_API_KEY=...)."
+  fi
+}
+
+cmd_setup() {
+  local non_interactive=0
+  [[ "${1:-}" == "--non-interactive" ]] && non_interactive=1
+  require_uv
+
+  log "Data home: $DEMAT_HOME"
+  mkdir -p "$DEMAT_HOME"
+  chmod 700 "$DEMAT_HOME"
+  mkdir -p "$DEMAT_HOME/data/pages" "$DEMAT_HOME/data/runs" "$DEMAT_HOME/data/uploads" \
+    "$DEMAT_HOME/data/demat-knowledge-base" "$DEMAT_HOME/logs"
+
+  # A pre-Homebrew tarball install (ADR 0009) kept its code here. Homebrew
+  # owns the code now; data/ is never touched.
+  local old
+  for old in app app.prev app.new; do
+    if [[ -d "$DEMAT_HOME/$old" ]]; then
+      rm -rf "${DEMAT_HOME:?}/$old"
+      log "Removed the old tarball install's $DEMAT_HOME/$old"
+    fi
+  done
+
+  write_config "$non_interactive"
+
+  log "Installing Python dependencies into $UV_PROJECT_ENVIRONMENT"
+  "$UV" sync --frozen --no-dev --directory "$CODE_ROOT"
+
+  cmd_install_app
+
+  log "Running the install check"
+  load_config
+  uv_run python -m scripts.check_install
+
+  if [[ -z "$(ls -A "$DEMAT_HOME/data/demat-knowledge-base" 2>/dev/null)" ]]; then
+    cat <<EOF
+
+The DEMAT knowledge base is not installed (the app runs without it). If you
+have access to the private repository:
+
+  git clone git@github.com:agherasim/demat-knowledge-base.git \\
+    "$DEMAT_HOME/data/demat-knowledge-base"
+EOF
+  fi
+  printf '\nDone. Start DEMAT+ from %s, or run `demat run`.\n' "$DEFAULT_APP_PATH"
+}
+
+main() {
+  local cmd="${1:-run}"
+  [[ $# -gt 0 ]] && shift
+  case "$cmd" in
+    run) cmd_run "$@" ;;
+    setup) cmd_setup "$@" ;;
+    install-app) cmd_install_app "$@" ;;
+    uninstall-app) cmd_uninstall_app "$@" ;;
+    -h | --help | help) usage ;;
+    *)
+      echo "unknown command: $cmd" >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
+}
+
+main "$@"

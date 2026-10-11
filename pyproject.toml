@@ -1,0 +1,87 @@
+[project]
+name = "demat"
+version = "1.1.0"
+description = "Add your description here"
+requires-python = ">=3.13"
+dependencies = [
+    "anthropic>=1.7.0",
+    "claude-agent-sdk>=0.2.157",
+    "jinja2>=3.1.0",
+    "pandas>=3.0.6",
+    "pillow>=11",
+    "pypdfium2>=4.30",
+    "streamlit>=1.64.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
+
+[project.optional-dependencies]
+lint = [
+    "ruff>=0.4.6,<1.0.0",
+    "mypy>=1.15.0,<2.0.0",
+    "codespell>=2.2.0,<3.0.0",
+    "pandas-stubs>=2.0.0",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle
+    "F",   # pyflakes
+    "W",   # pycodestyle warnings
+    "I",   # isort
+    "C",   # flake8-comprehensions
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+    "RUF", # ruff specific rules
+]
+ignore = ["E501", "C901"] # line-too-long (formatter's job), too-complex
+allowed-confusables = ["„", "“", "–", "…"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["demat"]
+forced-separate = ["tests"]
+
+[tool.mypy]
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+no_implicit_optional = true
+check_untyped_defs = true
+disallow_subclassing_any = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_unreachable = true
+follow_imports = "silent"
+ignore_missing_imports = true
+explicit_package_bases = true
+disable_error_code = ["misc", "no-untyped-call", "no-any-return"]
+exclude = [".venv", "data/"]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disable_error_code = ["misc", "no-untyped-call", "no-any-return", "arg-type"]
+
+[tool.codespell]
+# "Ue"/"ue" and "Geometrie" are German (DEMAT is a German math test); not typos.
+# ende/Ende, vor, ist, Sie, als/Als, oder: German report-body words (ADR
+# 0008's Classroom Profile), not typos. passt: German ("passt nicht" — ADR
+# 0010's grade/Normtabelle cross-check message), not "past". offen, manuell:
+# German provenance/status words (ADR 0013 — "offen" = still open/unresolved,
+# "manuell" = manually set), not "often"/"manual". relativ/alle/diagramm:
+# German child-report words (ADR 0014 — "relativ höchste/niedrigste
+# Teilbereiche", "für alle Kinder gleich", "Diagramm wie im Testbogen"), not
+# typos for "relative"/"all(ey)"/"Diagram".
+ignore-words-list = "ue,geometrie,ges,unparseable,ende,vor,ist,sie,als,oder,unter,passt,offen,manuell,formen,relativ,alle,diagramm"
+skip = "uv.lock,.venv,data"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,140 @@
+# DEMAT 1+ — scales from the external knowledge base (KB contract verified
+# 2026-09-20). No DEMAT 1+ sample sheet has been analyzed yet: the
+# `extraction_skill` stays a stub (demat/skills/demat-1plus-extraction/) until
+# one exists, and value_type/rw_max below are the KB's best-available
+# numbers, not a verified sheet layout.
+#
+# max_possible for gesamtwert: read from the tail of
+# data/demat1plus/normen.csv (rohwert for skala=gesamtwert tops out at 36.0).
+# Cross-checked against the sum of the nine subtest rw_max values below
+# (3+5+4+4+4+4+4+4+4 = 36) — they agree, no disagreement to report.
+
+test_key         = "demat1plus"
+test_version     = "DEMAT 1+"
+display_name     = "DEMAT 1+ — Deutscher Mathematiktest für erste Klassen"
+extraction_skill = "demat-1plus-extraction"
+aliases          = ["DEMAT 1+", "DEMAT1+", "DEMAT 1plus"]
+norm_test        = "demat1plus"
+
+[[overall_metrics]]
+key = "rw_total"
+label = "Rohwert gesamt"
+value_type = "int"
+min_value = 0
+max_possible = 36   # normen.csv tail (skala=gesamtwert), agrees with summed subtest maxima
+required = true
+norm_scale = "gesamtwert"
+
+[[overall_metrics]]
+key = "pr_total"
+label = "Prozentrang gesamt"
+value_type = "int"
+min_value = 0
+max_value = 100
+norm_scale = "gesamtwert"
+norm_field = "pr"
+
+[[overall_metrics]]
+key = "pr_band"
+label = "Prozentrang-Bereich"
+value_type = "text"
+norm_scale = "gesamtwert"
+norm_field = "pr_band"
+
+# min/max re-verified against the KB norm series for skala=gesamtwert
+# (data/demat1plus/normen.csv): printed t_wert ranges from 0 (k2_jungen,
+# rohwert 0) to 77 (k1_mädchen, rohwert 36). The textbook 20-80 T-score
+# range is narrower than what this manual actually prints and wrongly
+# flagged correctly-transcribed sheets (see demat2plus.toml for the same
+# fix, done first there).
+[[overall_metrics]]
+key = "t_total"
+label = "T-Wert"
+value_type = "real"
+min_value = 0
+max_value = 77
+norm_scale = "gesamtwert"
+norm_field = "t_wert"
+
+[[overall_metrics]]
+key = "t_band"
+label = "T-Wert-Bereich"
+value_type = "text"
+norm_scale = "gesamtwert"
+norm_field = "t_band"
+
+[[subtests]]
+key = "MZ"
+printed_label = "MZ"
+name = "Mengen – Zahlen"
+rw_max = 3   # KB tabellen.json meta "max=3", Manual S. 41
+value_type = "int"
+norm_scale = "subtest_MZ"
+
+[[subtests]]
+key = "ZR"
+printed_label = "ZR"
+name = "Zahlenraum"
+rw_max = 5   # KB tabellen.json meta "max=5", Manual S. 41
+value_type = "int"
+norm_scale = "subtest_ZR"
+
+[[subtests]]
+key = "AD"
+printed_label = "AD"
+name = "Addition"
+rw_max = 4   # KB tabellen.json meta "max=4", Manual S. 42
+value_type = "int"
+norm_scale = "subtest_AD"
+
+[[subtests]]
+key = "SU"
+printed_label = "SU"
+name = "Subtraktion"
+rw_max = 4   # KB tabellen.json meta "max=4", Manual S. 42
+value_type = "int"
+norm_scale = "subtest_SU"
+
+[[subtests]]
+key = "ZZ"
+printed_label = "ZZ"
+name = "Zahlenzerlegung – Zahlenergänzung"
+rw_max = 4   # KB tabellen.json meta "max=4", Manual S. 42
+value_type = "int"
+norm_scale = "subtest_ZZ"
+
+[[subtests]]
+key = "TG"
+printed_label = "TG"
+name = "Teil – Ganzes"
+rw_max = 4   # KB tabellen.json meta "max=4", Manual S. 42
+value_type = "int"
+norm_scale = "subtest_TG"
+
+[[subtests]]
+key = "KA"
+printed_label = "KA"
+name = "Kettenaufgaben"
+rw_max = 4   # KB tabellen.json meta "max=4", Manual S. 43
+value_type = "int"
+norm_scale = "subtest_KA"
+
+[[subtests]]
+key = "UG"
+printed_label = "UG"
+name = "Ungleichungen"
+rw_max = 4   # KB tabellen.json meta "max=4", Manual S. 43
+value_type = "int"
+norm_scale = "subtest_UG"
+
+[[subtests]]
+key = "SA"
+printed_label = "SA"
+name = "Sachaufgaben"
+rw_max = 4   # KB tabellen.json meta "max=4", Manual S. 43
+value_type = "int"
+norm_scale = "subtest_SA"
+
+[[rules.sum]]
+metric = "rw_total"
+over   = "subtests.rw"

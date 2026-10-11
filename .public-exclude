@@ -1,0 +1,12 @@
+# Paths kept out of the public mirror `agherasim/demat-plus-public` (ADR 0017).
+# One git pathspec per line, relative to the repo root. Read by
+# scripts/check_kb_leak.py (which scans only what would be published) and by
+# .github/workflows/publish.yml (which builds the public snapshot from it).
+#
+# Internal working specs.
+docs/specs/
+.agents/
+# Example reports that show the manuals' band legend.
+docs/adr/0014-child-report-examples.md
+# Private CI: wires the knowledge-base checkout and the publish deploy keys.
+.github/

@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# uv / venv
+.venv/
+env/
+venv/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# App data (SQLite DB, rendered page images, per-run agent output) — never committed
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# Claude Code project skills symlink (generated from demat/skills/ by config.ensure_skills_discoverable())
+.claude/skills/
+# Claude Code local machine state (never shared)
+.claude/settings.local.json
+.claude/.headroom_wrap_*
+
+# Test / lint / type-check caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+.serena
+.env

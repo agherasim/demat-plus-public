@@ -1,0 +1,101 @@
+# Klassenprofil {{ data.klasse }} – {{ data.test_version }}{% if data.test_form_summary %} (Form {{ data.test_form_summary }}){% endif %}
+
+Schuljahr {{ data.schuljahr }} · {{ testdatum_label }} · {{ data.child_count }} Kinder
+{% if data.child_count + data.awaiting_review_count > data.child_count %}(von {{ data.child_count + data.awaiting_review_count }} erfassten Bögen){% endif %}
+
+{% if data.norm_group %}Vergleichsnorm: {{ data.norm_group_label }} ({{ data.norm_group }}){% else %}Vergleichsnorm: nicht erfasst{% endif %}
+
+*Dieses Profil ist ein Screening-Instrument. Es ersetzt keine Einzeldiagnostik und begründet für
+sich allein keine Diagnose (Rechenschwäche, Rechenstörung, Dyskalkulie).*
+
+Kategorien ({{ 'Prozentrang' if data.classification_basis == 'pr' else 'T-Wert' }}): {{ data.categories_ordered | join(' · ') }}
+
+{% if awaiting_review_line %}
+> ⏳ {{ awaiting_review_line }}
+{% endif %}
+{% if data.cross_check_warning %}
+> ⚠️ {{ data.cross_check_warning }}
+{% endif %}
+
+## Klassenprofil
+
+### Verteilung der Gesamtleistung
+
+{% for row in distribution %}
+- **{{ row.category }}** ({{ row.count }} Kinder): {{ row.members_label }}
+{% endfor %}
+
+Klassenmittelwert: {{ data.class_mean if data.class_mean is not none else '—' }} · Median: {{ data.class_median if data.class_median is not none else '—' }} (n={{ data.class_n }} von {{ data.child_count }})
+
+### Mittlerer Prozentrang je Teilbereich
+
+{{ subtest_chart_svg }}
+
+{% if data.has_class_norms %}
+Die Balken beziehen sich auf die Klassennormen nach Tabelle 5 (siehe unten).
+{% else %}
+Mittlerer Prozentrang je Teilbereich — deskriptiv über diese Klasse; für {{ data.test_version }} sind
+keine Klassennormen veröffentlicht. Die Marke bei 50 zeigt die Normmitte der Normstichprobe, nicht
+einen Klassenwert.
+{% endif %}
+
+{% if data.has_class_norms and data.class_norm %}
+### Klassennormen (Tabelle 5)
+
+- Klassenmittelwert: {{ data.class_norm.klassenmittelwert }} · Klassenstreuung: {{ data.class_norm.klassenstreuung }}
+{% if data.class_norm.interpretation %}
+- {{ data.class_norm.interpretation.text }} ({{ data.class_norm.interpretation.source }})
+{% endif %}
+{% for w in data.class_norm.warnings %}
+- ⚠️ {{ w }}
+{% endfor %}
+{% endif %}
+
+{% if data.missing_data.children_without_overall %}
+> Kinder ohne Gesamtwert: {{ data.missing_data.children_without_overall | join(', ') }}
+{% endif %}
+{% if data.missing_data.subtests_with_zero_present %}
+> Teilbereiche ohne erfasste Werte in dieser Klasse: {{ data.missing_data.subtests_with_zero_present | join(', ') }}
+{% endif %}
+
+## Was das Profil zeigt
+
+{{ prose.profil_staerken }}
+
+{{ prose.profil_schwaechen }}
+
+{{ prose.profil_muster }}
+
+## Empfehlungen für den Unterricht
+
+{% for bullet in prose.empfehlungen %}
+- {{ bullet }}
+{% endfor %}
+
+## Empfehlungen für jedes Kind
+
+{% for child in children %}
+### {{ child.display_label }}{% if child.overall_value is not none %} — {{ '%g' | format(child.overall_value) }}{% if data.classification_basis == 't' %} (T-Wert){% else %} (PR){% endif %}{% endif %}{% if child.overall_category %} · {{ child.overall_category }}{% endif %}{% if child.overall_categories %} ({{ child.overall_categories | join(' / ') }}){% endif %}
+
+{{ child.sparkline_svg }}
+
+{% if child.staerken %}**Stärken:** {{ child.staerken }}{% endif %}
+{% if child.schwaechen %}**Schwächen:** {{ child.schwaechen }}{% endif %}
+
+{% for bullet in child.empfehlungen %}
+- {{ bullet }}
+{% endfor %}
+
+{% endfor %}
+
+## Hinweise zur Interpretation
+
+- Die Teilbereiche werden mit wenigen Aufgaben erfasst; ein einzelner Fehler kann den Wert stark
+  verschieben. Sie zeigen Tendenzen, keine gesicherten Einzelbefunde.
+- Der Gesamtwert ist die verlässlichere Grundlage für eine Einschätzung als ein einzelner
+  Teilbereich.
+- Ein DEMAT-Ergebnis allein begründet keine Diagnose (Rechenschwäche, Rechenstörung, Dyskalkulie).
+  Auffällige Ergebnisse rechtfertigen eine weitere Abklärung, keine Diagnosestellung.
+- Als „unsicher" markierte Werte stammen aus schwer lesbaren oder blass gedruckten Normtabellen-
+  Zellen und wurden trotzdem verwendet; ein als „Druckfehler vermutet" markierter Wert wurde
+  verweigert und muss im gedruckten Handbuch geprüft werden.

@@ -1,0 +1,14 @@
+# Reviewed exceptions for scripts/check_kb_leak.py (ADR 0017).
+# Format: <path>:<the flagged line, stripped, exactly as in the file>.
+# Add a line only after confirming it carries no knowledge-base content; a
+# changed line no longer matches and is flagged again.
+#
+# Fictional child's report text: PRs with no raw score or norm group, so
+# nothing here maps back to a norm table row.
+tests/child_report_fixtures.py:"Mengen – Zahlen (PR 58), Teil – Ganzes (PR 30)"
+tests/child_report_fixtures.py:"Kettenaufgaben (PR 2), Addition (PR 3)"
+#
+# Synthetic inputs of the guard's own unit tests (invented values; the CSV
+# header is the column schema `demat/reports/norms.py` reads, not table data).
+tests/test_check_kb_leak.py:_PR_LINE = "ARI PR 12 · SAR PR 9"
+tests/test_check_kb_leak.py:test,tabelle,normgruppe,skala,rohwert,pr,pr_band,t_wert,t_band,status,anmerkung,seite

@@ -1,0 +1,40 @@
+# Rendered by .github/workflows/ci.yml (homebrew job) on v* tags of the private
+# demat-plus repo and pushed to agherasim/homebrew-tap (ADR 0017). The source
+# is the public mirror; it never contains the DEMAT knowledge base.
+class Demat < Formula
+  desc "Turn scanned DEMAT score sheets into structured, queryable records"
+  homepage "https://github.com/agherasim/demat-plus-public"
+  url "https://github.com/agherasim/demat-plus-public/archive/refs/tags/v@VERSION@.tar.gz"
+  sha256 "@SHA256@"
+  head "https://github.com/agherasim/demat-plus-public.git", branch: "main"
+
+  depends_on :macos
+  depends_on "uv"
+
+  def install
+    # The code stays a uv virtual project (ADR 0009 §6): no wheel, no
+    # site-packages. Python deps go to ~/.demat/venv on `demat setup`.
+    libexec.install Dir["*"], ".streamlit"
+    (bin/"demat").write_env_script libexec/"packaging/demat",
+      DEMAT_CODE_ROOT: opt_libexec,
+      DEMAT_BIN:       opt_bin/"demat"
+  end
+
+  def caveats
+    <<~EOS
+      Finish the install (API key, Python dependencies, DEMAT+ in ~/Applications):
+        demat setup
+
+      The DEMAT knowledge base is a separate, private install. With access to it:
+        git clone git@github.com:agherasim/demat-knowledge-base.git ~/.demat/data/demat-knowledge-base
+
+      Your data stays in ~/.demat. Before `brew uninstall demat`, remove the launcher:
+        demat uninstall-app
+    EOS
+  end
+
+  test do
+    assert_match "No DEMAT+ launcher",
+      shell_output("#{bin}/demat uninstall-app #{testpath}/DEMAT+.app")
+  end
+end

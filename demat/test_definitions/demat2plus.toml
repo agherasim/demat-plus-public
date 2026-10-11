@@ -1,0 +1,146 @@
+# DEMAT 2+ — full definition (real sample sheet analyzed).
+# `rw_max` values copied from the external knowledge base
+# (data/demat-knowledge-base/data/demat2plus/tabellen.json, `meta: ["max=N …"]`),
+# each cited with the manual page (`seite`) from that same source. Copied, not
+# read live — see ADR 0005 §9.3/§9.6. KB contract verified 2026-09-20.
+
+test_key         = "demat2plus"  # slug; filename stem. Conforms to the external KB's naming (§9.5)
+test_version     = "DEMAT 2+"  # printed label; matches triage output and assessments.test_version
+display_name     = "DEMAT 2+ — Deutscher Mathematiktest für zweite Klassen"
+extraction_skill = "demat-2plus-extraction"
+aliases          = ["DEMAT 2+", "DEMAT2+", "DEMAT 2plus"]   # triage-output normalisation
+norm_test        = "demat2plus"          # external KB data/<test>/ dir
+
+# rw_total.max_possible re-verified two independent ways that agree: the KB
+# norm series for skala=gesamtwert (data/demat2plus/normen.csv) ends at
+# rohwert 36.0, and the ten subtest maxima below sum to 36.
+[[overall_metrics]]
+key = "rw_total"
+label = "Rohwert gesamt"
+value_type = "real"  # 0.5 steps — see §9.3
+min_value = 0
+max_possible = 36
+required = true
+norm_scale = "gesamtwert"
+
+[[overall_metrics]]
+key = "pr_total"
+label = "Prozentrang gesamt"
+value_type = "int"
+min_value = 0
+max_value = 100
+norm_scale = "gesamtwert"
+norm_field = "pr"
+
+[[overall_metrics]]
+key = "pr_band"
+label = "Prozentrang-Bereich"
+value_type = "text"
+norm_scale = "gesamtwert"
+norm_field = "pr_band"
+
+# min/max re-verified against the KB norm series for skala=gesamtwert
+# (data/demat2plus/normen.csv): printed t_wert ranges from 7 (k3_jungen,
+# rohwert 0.0/0.5 — flagged druckfehler_vermutet in the KB, but still what a
+# sheet can show) to 81 (k2_mädchen rohwert 36.0 / k2_jungen, k3_mädchen
+# rohwert ~30). The textbook 20-80 T-score range is narrower than what this
+# manual actually prints and wrongly flagged correctly-transcribed sheets.
+[[overall_metrics]]
+key = "t_total"
+label = "T-Wert"
+value_type = "real"
+min_value = 7
+max_value = 81
+norm_scale = "gesamtwert"
+norm_field = "t_wert"
+
+[[overall_metrics]]
+key = "t_band"
+label = "T-Wert-Bereich"
+value_type = "text"
+norm_scale = "gesamtwert"
+norm_field = "t_band"
+
+[[subtests]]
+key = "ZE"  # canonical key; matches the KB's skala suffix (subtest_ZE)
+printed_label = "ZE"          # what is printed on the sheet
+name = "Zahleneigenschaften"
+rw_max = 2                    # KB tabellen.json meta "max=2", Manual S. 43
+value_type = "int"
+norm_scale = "subtest_ZE"
+
+[[subtests]]
+key = "LA"                    # KB skala suffix stayed ASCII across the German rename (subtest_LA)
+printed_label = "LÄ"          # printed on the sheet with the umlaut
+name = "Längenvergleich"
+rw_max = 4                    # KB tabellen.json meta "max=4", Manual S. 43
+value_type = "int"
+norm_scale = "subtest_LA"
+
+[[subtests]]
+key = "AD"
+printed_label = "AD"
+name = "Addition"
+rw_max = 4                    # KB tabellen.json meta "max=4", Manual S. 43
+value_type = "int"
+norm_scale = "subtest_AD"
+
+[[subtests]]
+key = "SU"
+printed_label = "SU"
+name = "Subtraktion"
+rw_max = 4                    # KB tabellen.json meta "max=4", Manual S. 43
+value_type = "int"
+norm_scale = "subtest_SU"
+
+[[subtests]]
+key = "DO"
+printed_label = "DO"
+name = "Verdoppeln"
+rw_max = 3                    # KB tabellen.json meta "max=3", Manual S. 44
+value_type = "int"
+norm_scale = "subtest_DO"
+
+[[subtests]]
+key = "DI"
+printed_label = "DI"
+name = "Division"
+rw_max = 4                    # KB tabellen.json meta "max=4", Manual S. 44
+value_type = "int"
+norm_scale = "subtest_DI"
+
+[[subtests]]
+key = "HA"
+printed_label = "HA"
+name = "Halbieren"
+rw_max = 3                    # KB tabellen.json meta "max=3", Manual S. 44
+value_type = "int"
+norm_scale = "subtest_HA"
+
+[[subtests]]
+key = "GEL"
+printed_label = "GEL"
+name = "Rechnen mit Geld"
+rw_max = 4                    # KB tabellen.json meta "max=4", Manual S. 44
+value_type = "int"
+norm_scale = "subtest_GEL"
+
+[[subtests]]
+key = "SA"
+printed_label = "SA"
+name = "Sachaufgaben"
+rw_max = 4                    # KB tabellen.json meta "max=4 (halbe Punkte möglich)", Manual S. 45
+value_type = "real"           # half-point steps — see ADR 0005 §9.3
+norm_scale = "subtest_SA"
+
+[[subtests]]
+key = "GEO"
+printed_label = "GEO"
+name = "Geometrie"
+rw_max = 4                    # KB tabellen.json meta "max=4", Manual S. 45
+value_type = "int"
+norm_scale = "subtest_GEO"
+
+[[rules.sum]]                      # drives the total_mismatch flag
+metric = "rw_total"
+over   = "subtests.rw"

@@ -1,0 +1,138 @@
+# DEMAT 3+ — sheet-verified against two Testheft Form B cover sheets (2026-09-27);
+# scoring structure and maxima from the KB (references/demat3plus.md "Aufbau",
+# Manual S. 10; Kap. 7.1 "Summen je Aufgabentyp → Subtests → Testgesamtwert").
+# The teacher writes one RW per Aufgabentyp; J/K/L (subtest) and M (total)
+# Rohwert-Summen are usually left blank and are sum-filled by the app (ADR 0015).
+# The sheet prints SR as two cells SR1 (2) + SR2 (2) = SR (4) (sheet-verified;
+# the KB only says "SR: 4 Items in zwei Teilen"). Class-norm scale for SR1+SR2 is "SR".
+# No T-Wert cells are printed anywhere on the sheet -> no t_total / t_band.
+
+test_key         = "demat3plus"
+test_version     = "DEMAT 3+"
+display_name     = "DEMAT 3+ — Deutscher Mathematiktest für dritte Klassen"
+extraction_skill = "demat-3plus-extraction"
+aliases          = ["DEMAT 3+", "DEMAT3+", "DEMAT 3plus"]
+norm_test        = "demat3plus"
+
+[[overall_metrics]]
+key = "rw_total"            # field M "Test-gesamtwert" Rohwert-Summe
+label = "Rohwert gesamt"
+value_type = "int"
+min_value = 0
+max_possible = 31
+required = true
+norm_scale = "gesamtwert"
+
+[[overall_metrics]]
+key = "pr_total"            # "Prozentrang" cell under M; tables A4/A8
+label = "Prozentrang gesamt"
+value_type = "int"
+min_value = 0
+max_value = 100
+norm_scale = "gesamtwert"
+norm_field = "pr"
+
+[[overall_metrics]]
+key = "pr_band"             # PR-Band column M (drawn graph); filled by lookup
+label = "Prozentrang-Bereich"
+value_type = "text"
+norm_scale = "gesamtwert"
+norm_field = "pr_band"
+
+# --- Aufgabentyp cells, printed order. No individual norms (KB: class norms only). ---
+[[subtests]]
+key = "ZS"
+printed_label = "ZS"
+name = "Zahlenstrahlen"
+rw_max = 3
+value_type = "int"
+[[subtests]]
+key = "AD"
+printed_label = "AD"
+name = "Additionen"
+rw_max = 4
+value_type = "int"
+[[subtests]]
+key = "SU"
+printed_label = "SU"
+name = "Subtraktionen"
+rw_max = 4
+value_type = "int"
+[[subtests]]
+key = "MU"
+printed_label = "MU"
+name = "Multiplikationen"
+rw_max = 4
+value_type = "int"
+[[subtests]]
+key = "SR1"
+printed_label = "SR1"
+name = "Sachrechnungen Teil 1"
+rw_max = 2
+value_type = "int"
+[[subtests]]
+key = "SR2"
+printed_label = "SR2"
+name = "Sachrechnungen Teil 2"
+rw_max = 2
+value_type = "int"
+[[subtests]]
+key = "SZ"
+printed_label = "SZ"
+name = "Spiegelzeichnungen"
+rw_max = 3
+value_type = "int"
+[[subtests]]
+key = "FL"
+printed_label = "FL"
+name = "Formen legen"
+rw_max = 3
+value_type = "int"
+[[subtests]]
+key = "LS"
+printed_label = "LS"
+name = "Längen schätzen"
+rw_max = 2
+value_type = "int"
+[[subtests]]
+key = "LU"
+printed_label = "LU"
+name = "Längen umrechnen"
+rw_max = 4
+value_type = "int"
+
+# --- Subtests (Rohwert-Summe J/K/L), individually normed (A1-A3 / A5-A7). ---
+[[subtests]]
+key = "ARI"
+printed_label = "Arithmetik"
+name = "Arithmetik"
+rw_max = 15
+value_type = "int"
+norm_scale = "subtest_arithmetik"
+[[subtests]]
+key = "SAR"
+printed_label = "Sachrechnen"
+name = "Sachrechnen und Größen"
+rw_max = 8
+value_type = "int"
+norm_scale = "subtest_sachrechnen"
+[[subtests]]
+key = "GEO"
+printed_label = "Geometrie"
+name = "Geometrie"
+rw_max = 8
+value_type = "int"
+norm_scale = "subtest_geometrie"
+
+[[rules.sum]]
+subtest = "ARI"
+over    = ["ZS", "AD", "SU", "MU"]
+[[rules.sum]]
+subtest = "SAR"
+over    = ["SR1", "SR2", "LU"]
+[[rules.sum]]
+subtest = "GEO"
+over    = ["SZ", "FL", "LS"]
+[[rules.sum]]
+metric  = "rw_total"
+over    = ["ARI", "SAR", "GEO"]

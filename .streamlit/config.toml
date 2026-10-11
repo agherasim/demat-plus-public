@@ -1,0 +1,49 @@
+# Fonts are still the 3-font system extracted from the DEMAT 5+ (Hogrefe)
+# manual cover and body pages. Verified by rendering Google Font candidates
+# next to crops of the source and picking by eye, rather than guessing from
+# memory (see scratchpad font_compare.html / font_compare2.html from the
+# sessions that produced this):
+# - Brand wordmark ("DEMAT5+" on the cover) -> Mulish. Special-cased to
+#   the hero <h1> only via CSS in app.py, NOT set here, so it doesn't leak
+#   into every heading.
+# - Sans for headings/tables/tabs/UI/charts -> Carlito (matches the cover
+#   subtitle and the manual's interior headings like "Ergebnisprofil" and
+#   the "Tabelle 2" column headers). This is `font` below, so it's the
+#   default for everything (headingFont inherits from `font` when unset).
+# - Serif for large text blocks only -> Source Serif 4, matching the
+#   manual's printed paragraph text. NOT set globally; opt in via the
+#   `.demat-prose` CSS class in app.py so tables/UI stay sans-serif.
+#
+# Colors are the brand palette (Coolors export, palette.pdf): primaryColor
+# is the brand gold, redColor/greenColor/blueColor are the destructive,
+# ok, and secondary-accent anchors. backgroundColor/secondaryBackgroundColor/
+# borderColor are tints mixed toward that background so nothing reads as a
+# leftover from the old warm-off-white theme; the same tints are mirrored
+# as CSS vars in app.py for the custom sidebar/list styling there.
+
+[client]
+# Hide developer-only toolbar items (Deploy button, rerun, clear cache);
+# the app toolbar instead carries the current page's title (see app.py).
+toolbarMode = "viewer"
+# Never show tracebacks/exception messages in the browser — app.py's
+# top-level try/except logs the full traceback server-side and shows a
+# short banner instead. This also covers any exception outside that
+# try/except (e.g. in the sidebar nav).
+showErrorDetails = "none"
+
+[theme]
+base = "light"
+
+backgroundColor = "#FAF7F0"
+secondaryBackgroundColor = "#F3F0E9"
+textColor = "#1A1A1A"
+primaryColor = "#FCB801"
+borderColor = "#CCC9C2"
+linkColor = "#0062AD"
+
+redColor = "#B72414"
+greenColor = "#188D42"
+blueColor = "#0062AD"
+
+font = "Carlito:https://fonts.googleapis.com/css2?family=Carlito:wght@400;700&display=swap"
+baseFontSize = 18

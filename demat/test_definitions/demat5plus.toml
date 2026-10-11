@@ -1,0 +1,97 @@
+# DEMAT 5+ — scales from the external knowledge base (KB contract verified
+# 2026-09-20). No DEMAT 5+ sample sheet has been analyzed yet: the
+# `extraction_skill` stays a stub.
+#
+# max_possible for gesamtwert: normen.csv tail (skala=gesamtwert) is 33.0,
+# also stated in tabellen.json's beschreibung ("Gesamtwert (0-33)").
+#
+# FINDING, reported rather than reconciled per the spec: the two *normed*
+# subtests' maxima (subtest_A = 14, subtest_C = 15; both from the normen.csv
+# tail and confirmed by tabellen.json's beschreibung "(0-14)"/"(0-15)") sum
+# to 29, not 33. The remaining 4 points belong to Subtest B (Geometrie),
+# which the KB's `nicht_verfügbar` entry says is unnormed specifically
+# because it has only 4 items ("nur 4 Items") — so rw_max=4 for B is a
+# strong inference from that note, not a "max=" citation like the others,
+# and norm_scale is deliberately null (no norm data exists for it).
+# 14 + 15 + 4 = 33, consistent with the gesamtwert total.
+
+test_key         = "demat5plus"
+test_version     = "DEMAT 5+"
+display_name     = "DEMAT 5+ — Deutscher Mathematiktest für fünfte Klassen"
+extraction_skill = "demat-5plus-extraction"
+aliases          = ["DEMAT 5+", "DEMAT5+", "DEMAT 5plus"]
+norm_test        = "demat5plus"
+
+[[overall_metrics]]
+key = "rw_total"
+label = "Rohwert gesamt"
+value_type = "int"
+min_value = 0
+max_possible = 33  # normen.csv tail (skala=gesamtwert); tabellen.json beschreibung "(0-33)"
+required = true
+norm_scale = "gesamtwert"
+
+[[overall_metrics]]
+key = "pr_total"
+label = "Prozentrang gesamt"
+value_type = "int"
+min_value = 0
+max_value = 100
+norm_scale = "gesamtwert"
+norm_field = "pr"
+
+[[overall_metrics]]
+key = "pr_band"
+label = "Prozentrang-Bereich"
+value_type = "text"
+norm_scale = "gesamtwert"
+norm_field = "pr_band"
+
+# min/max re-verified against the KB norm series for skala=gesamtwert
+# (data/demat5plus/normen.csv): printed t_wert ranges from 19 (gymnasium,
+# rohwert 0) to 82 (übergreifend, rohwert 33). The textbook 20-80 T-score
+# range is narrower than what this manual actually prints and wrongly
+# flagged correctly-transcribed sheets (see demat2plus.toml for the same
+# fix, done first there).
+[[overall_metrics]]
+key = "t_total"
+label = "T-Wert"
+value_type = "real"
+min_value = 19
+max_value = 82
+norm_scale = "gesamtwert"
+norm_field = "t_wert"
+
+[[overall_metrics]]
+key = "t_band"
+label = "T-Wert-Bereich"
+value_type = "text"
+norm_scale = "gesamtwert"
+norm_field = "t_band"
+
+[[subtests]]
+key = "A"
+printed_label = "A"
+name = "Arithmetik"
+rw_max = 14  # normen.csv tail (skala=subtest_A); tabellen.json beschreibung "(0-14)", Manual S. 35
+value_type = "int"
+norm_scale = "subtest_A"
+
+[[subtests]]
+key = "B"
+printed_label = "B"
+name = "Geometrie"
+rw_max = 4    # inferred: KB nicht_verfügbar note "nur 4 Items" — not normed (Manual S. 21)
+value_type = "int"   # Subtest B is unnormed (nicht_verfügbar) — norm_scale deliberately omitted (null)
+
+[[subtests]]
+key = "C"
+printed_label = "C"
+name = "Sachrechnen"
+rw_max = 15  # normen.csv tail (skala=subtest_C); tabellen.json beschreibung "(0-15)", Manual S. 35
+value_type = "int"
+norm_scale = "subtest_C"
+
+[[rules.sum]]
+metric = "rw_total"
+over   = "subtests.rw"

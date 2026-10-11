@@ -1,0 +1,40 @@
+<!-- demat-plus child report · one-page layout guaranteed in the app print view only -->
+# {{ data.test_version }} · Einzelauswertung
+
+<table style="border-collapse:collapse;width:100%">
+<tr><th style="background:#EDEDED;border:1px solid #A0A0A0;padding:2px 6px">Name</th><th style="background:#EDEDED;border:1px solid #A0A0A0;padding:2px 6px">Klasse</th><th style="background:#EDEDED;border:1px solid #A0A0A0;padding:2px 6px">Testdatum</th><th style="background:#EDEDED;border:1px solid #A0A0A0;padding:2px 6px">Test</th><th style="background:#EDEDED;border:1px solid #A0A0A0;padding:2px 6px">Normtabelle</th></tr>
+<tr><td style="background:#EDEDED;border:1px solid #A0A0A0;padding:2px 6px">{{ header_name | md_cell }}</td><td style="background:#EDEDED;border:1px solid #A0A0A0;padding:2px 6px">{{ data.klasse | md_cell }}</td><td style="background:#EDEDED;border:1px solid #A0A0A0;padding:2px 6px">{{ testdatum | md_cell }}</td><td style="background:#EDEDED;border:1px solid #A0A0A0;padding:2px 6px">{{ test_label | md_cell }}</td><td style="background:#EDEDED;border:1px solid #A0A0A0;padding:2px 6px">{{ normtabelle_label | md_cell }}</td></tr>
+</table>
+
+## Gesamtergebnis
+
+{{ rating_line }}
+
+<table style="border-collapse:collapse;width:100%">
+<tr>{% for cat in data.rating_categories %}<th style="background:{{ '#FFFFFF' if cat in highlighted_categories else '#EDEDED' }};border:1px solid #A0A0A0;padding:2px 6px;font-weight:{{ 'bold' if cat in highlighted_categories else 'normal' }}">{{ cat | md_cell }}</th>{% endfor %}</tr>
+<tr>{% for band in data.bands %}<td style="background:{{ '#FFFFFF' if band.category in highlighted_categories else '#EDEDED' }};border:1px solid #A0A0A0;padding:2px 6px;font-weight:{{ 'bold' if band.category in highlighted_categories else 'normal' }}">{{ (basis_prefix ~ band.label if loop.first else band.label) | md_cell }}</td>{% endfor %}</tr>
+</table>
+
+## Ergebnisse (wie im Testbogen)
+
+{{ sheet_svg }}
+
+{% if t_basis_caption %}
+{{ t_basis_caption }}
+
+{% endif %}
+{{ data.profile_high }}
+
+{{ data.profile_low }}
+
+## Hinweise
+
+{% for line in data.hint_lines %}
+- {{ line }}
+{% endfor %}
+
+{{ notes_svg }}
+
+---
+
+<sub>{{ footer }}</sub>
