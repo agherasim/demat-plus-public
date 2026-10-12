@@ -4,6 +4,7 @@
 # `demat run`, which stays in the foreground so the .app remains alive in the
 # Dock and quitting it stops the server.
 export DEMAT_HOME=${DEMAT_HOME:-@@HOME@@}
-# A GUI-launched process does not inherit a shell PATH.
-export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+# A GUI-launched process does not inherit a shell PATH. ~/.local/bin is where
+# the Claude Code installer puts `claude` (DEMAT_RUNNER=agent_sdk).
+export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.local/bin:$PATH"
 exec "@@DEMAT_BIN@@" run --log

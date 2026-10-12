@@ -20,6 +20,8 @@ data/
 
 # Claude Code project skills symlink (generated from demat/skills/ by config.ensure_skills_discoverable())
 .claude/skills/
+# The CLI runner's working dir (config.AGENT_WORKDIR) when DEMAT_HOME=./ in a dev checkout
+/agent/
 # Claude Code local machine state (never shared)
 .claude/settings.local.json
 .claude/.headroom_wrap_*

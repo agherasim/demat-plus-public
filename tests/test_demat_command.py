@@ -56,3 +56,75 @@ def test_help_lists_the_subcommands(tmp_path, args):
 
 def test_unknown_command_fails(tmp_path):
     assert _demat(tmp_path, "nope").returncode == 1
+
+
+def test_launcher_path_includes_the_claude_cli_install_dir(tmp_path):
+    assert _demat(tmp_path, "install-app").returncode == 0
+    launcher = (
+        tmp_path / "Apps" / "DEMAT+.app" / "Contents" / "MacOS" / "demat-launcher"
+    ).read_text()
+    assert "$HOME/.local/bin" in launcher
+
+
+def test_setup_rejects_an_unknown_runner(tmp_path):
+    result = _demat(tmp_path, "setup", "--runner", "nope")
+    assert result.returncode == 1
+    assert "direct or agent_sdk" in result.stderr
+
+
+def _write_config(tmp_path: Path, runner: str) -> Path:
+    # Sources only the shell functions (main is stripped), then calls
+    # write_config the way cmd_setup does; no uv sync or app generation.
+    home = tmp_path / "home"
+    home.mkdir(exist_ok=True)
+    script = DEMAT.read_text().replace('\nmain "$@"\n', "\n")
+    subprocess.run(
+        ["bash", "-c", f'{script}\nwrite_config 1 "{runner}"'],
+        env={**os.environ, "DEMAT_HOME": str(home)},
+        check=True,
+        capture_output=True,
+    )
+    return home / "config.env"
+
+
+def test_setup_writes_the_agent_sdk_runner_without_a_key(tmp_path):
+    config_env = _write_config(tmp_path, "agent_sdk")
+    text = config_env.read_text()
+    assert "DEMAT_RUNNER=agent_sdk" in text
+    assert "ANTHROPIC_API_KEY" not in text
+    assert config_env.stat().st_mode & 0o777 == 0o600
+
+
+def test_setup_runner_switch_keeps_the_rest_of_config_env(tmp_path):
+    config_env = _write_config(tmp_path, "")
+    config_env.write_text("DEMAT_RUNNER=direct\nANTHROPIC_API_KEY='k'\n")
+    _write_config(tmp_path, "agent_sdk")
+    lines = config_env.read_text().splitlines()
+    assert "DEMAT_RUNNER=agent_sdk" in lines
+    assert "DEMAT_RUNNER=direct" not in lines
+    assert "ANTHROPIC_API_KEY='k'" in lines
+    assert config_env.stat().st_mode & 0o777 == 0o600
+
+
+@pytest.mark.parametrize(("runner", "key_seen"), [("agent_sdk", ""), ("direct", "k")])
+def test_run_hides_the_api_key_from_the_cli_runner(tmp_path, runner, key_seen):
+    # cmd_run up to the key handling: load_config, then the agent_sdk unset.
+    home = tmp_path / "home"
+    home.mkdir()
+    (home / "config.env").write_text(f"DEMAT_RUNNER={runner}\nANTHROPIC_API_KEY=k\n")
+    script = DEMAT.read_text().replace('\nmain "$@"\n', "\n")
+    start = script.index("  load_config\n  # The CLI prefers")
+    end = script.index('  local port="${DEMAT_PORT')
+    body = script[start:end]
+    out = subprocess.run(
+        [
+            "bash",
+            "-c",
+            f'{script}\nf() {{\n{body}\n}}\nf; echo "[${{ANTHROPIC_API_KEY:-}}]"',
+        ],
+        env={**os.environ, "DEMAT_HOME": str(home)},
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    assert out.strip() == f"[{key_seen}]"

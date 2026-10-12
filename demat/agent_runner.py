@@ -235,7 +235,7 @@ class ClaudeAgentSdkRunner:
         from claude_agent_sdk import ClaudeAgentOptions, query
 
         options = ClaudeAgentOptions(
-            cwd=str(config.REPO_ROOT),
+            cwd=str(config.AGENT_WORKDIR),
             skills=[skill_name],
             allowed_tools=["Read", "Write"],
             disallowed_tools=["Bash", "WebFetch", "WebSearch"],
@@ -295,7 +295,7 @@ class ClaudeAgentSdkRunner:
         from claude_agent_sdk import ClaudeAgentOptions, query
 
         options = ClaudeAgentOptions(
-            cwd=str(config.REPO_ROOT),
+            cwd=str(config.AGENT_WORKDIR),
             skills=[skill_name] if skill_name else [],
             allowed_tools=["Read", "Write"],
             disallowed_tools=["Bash", "WebFetch", "WebSearch"],

@@ -72,7 +72,14 @@ KNOWLEDGE_BASE_DIR = Path(
 # 0005 §9.7. Whether adding to it is safe depends on `ClaudeAgentOptions
 # .skills` being an allowlist (confirmed — see the implementation report),
 # but the entry itself is still deferred to its own change.
-CLAUDE_DIR = CODE_ROOT / ".claude"
+#
+# Both live under `AGENT_WORKDIR`, the CLI's working directory: a dedicated,
+# otherwise empty dir in the data home, not `CODE_ROOT` (a Homebrew install's
+# code dir is the Cellar, which must stay as installed) and not `DEMAT_HOME`
+# itself (that would put the DB, salt and uploads in the agent's reach; it
+# only gets `PAGES_DIR`/`RUNS_DIR` via `add_dirs`). ADR 0017 §8.
+AGENT_WORKDIR = DEMAT_HOME.resolve() / "agent"
+CLAUDE_DIR = AGENT_WORKDIR / ".claude"
 CLAUDE_SKILLS_LINK = CLAUDE_DIR / "skills"
 EXTERNAL_SKILL_DIRS: list[Path] = []
 
@@ -127,8 +134,9 @@ def ensure_skills_discoverable() -> None:
     This project authors in-repo skills under `demat/skills/` instead (single
     source of truth, see spec/ADR 0004), so `.claude/skills/` is generated as
     a real directory containing one symlink per skill, named by that skill's
-    frontmatter `name`. In-repo targets stay relative; external targets are
-    absolute (ADR 0005 §9.7). Idempotent; safe to call repeatedly.
+    frontmatter `name`, pointing at the skill's absolute path (the links live
+    under `AGENT_WORKDIR`, which need not be inside `CODE_ROOT`). Idempotent;
+    safe to call repeatedly.
 
     A previous version of this function created `.claude/skills` itself as a
     single symlink to `demat/skills`. If that symlink is still there, it is
@@ -142,11 +150,11 @@ def ensure_skills_discoverable() -> None:
             CLAUDE_SKILLS_LINK.unlink()
         CLAUDE_SKILLS_LINK.mkdir(parents=True, exist_ok=True)
 
-        skill_sources: list[tuple[Path, bool]] = [
-            (d, False) for d in sorted(SKILLS_DIR.iterdir()) if d.is_dir()
-        ] + [(d, True) for d in EXTERNAL_SKILL_DIRS]
+        skill_dirs = [
+            d for d in sorted(SKILLS_DIR.iterdir()) if d.is_dir()
+        ] + EXTERNAL_SKILL_DIRS
 
-        for skill_dir, is_external in skill_sources:
+        for skill_dir in skill_dirs:
             skill_md = skill_dir / "SKILL.md"
             if not skill_md.exists():
                 continue
@@ -154,12 +162,7 @@ def ensure_skills_discoverable() -> None:
             link_path = CLAUDE_SKILLS_LINK / name
             if link_path.is_symlink() or link_path.exists():
                 link_path.unlink()
-            target = (
-                str(skill_dir.resolve())
-                if is_external
-                else os.path.relpath(skill_dir, CLAUDE_SKILLS_LINK)
-            )
-            link_path.symlink_to(target, target_is_directory=True)
+            link_path.symlink_to(skill_dir.resolve(), target_is_directory=True)
 
 
 # --- Model / runner ----------------------------------------------------------

@@ -5,8 +5,9 @@ uv virtual project).
 
 Imports `demat.config`, creates the data home, and prints what it resolved:
 `CODE_ROOT`, `DEMAT_HOME`, `DATA_DIR`, the selected runner, whether the
-knowledge base directory is present and non-empty, whether an Anthropic
-credential is resolvable, and whether every test definition loads. Never
+knowledge base directory is present and non-empty, whether that runner can
+reach Claude (an Anthropic credential for `direct`, the `claude` CLI on PATH
+for `agent_sdk`), and whether every test definition loads. Never
 prints key material — only booleans.
 
 An absent knowledge base or credential is a normal, expected state on a
@@ -21,6 +22,7 @@ Invoked by `demat setup` (`packaging/demat`, ADR 0017) as:
 
 from __future__ import annotations
 
+import shutil
 import sys
 
 from demat import config, test_registry
@@ -65,10 +67,16 @@ def main() -> int:
     if not kb_present:
         print(f"  (expected on a fresh install; see {config.KNOWLEDGE_BASE_DIR})")
 
-    credential_ok = _anthropic_credential_resolves()
-    print(f"Anthropic credential resolves: {credential_ok}")
-    if not credential_ok:
-        print("  (expected until ANTHROPIC_API_KEY is set in config.env)")
+    if config.RUNNER == "agent_sdk":
+        cli_ok = shutil.which("claude") is not None
+        print(f"Claude Code CLI found: {cli_ok}")
+        if not cli_ok:
+            print("  (install it and run `claude` once to log in)")
+    else:
+        credential_ok = _anthropic_credential_resolves()
+        print(f"Anthropic credential resolves: {credential_ok}")
+        if not credential_ok:
+            print("  (expected until ANTHROPIC_API_KEY is set in config.env)")
 
     definitions_ok = _test_definitions_load()
     print(f"test definitions load: {definitions_ok}")

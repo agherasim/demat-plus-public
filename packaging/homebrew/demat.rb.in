@@ -24,6 +24,8 @@ class Demat < Formula
     <<~EOS
       Finish the install (API key, Python dependencies, DEMAT+ in ~/Applications):
         demat setup
+      Or, to use your Claude Code login instead of an API key:
+        demat setup --runner agent_sdk
 
       The DEMAT knowledge base is a separate, private install. With access to it:
         git clone git@github.com:agherasim/demat-knowledge-base.git ~/.demat/data/demat-knowledge-base

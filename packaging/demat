@@ -4,7 +4,8 @@
 # DEMAT_CODE_ROOT (the stable opt_libexec) and DEMAT_BIN (the stable opt
 # path of this command, which the generated .app calls).
 #
-#   demat setup [--non-interactive]   first-run: config.env, DEMAT+.app, smoke test
+#   demat setup [--non-interactive] [--runner direct|agent_sdk]
+#                                     first-run: config.env, DEMAT+.app, smoke test
 #   demat run [--log]                 start the app and open the browser
 #   demat install-app [<path>]        (re)generate ~/Applications/DEMAT+.app
 #   demat uninstall-app [<path>]      remove it (run before `brew uninstall demat`)
@@ -29,7 +30,7 @@ log() { printf '==> %s\n' "$1"; }
 stamp() { date '+%Y-%m-%d %H:%M:%S'; }
 
 usage() {
-  sed -n '7,11p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+  sed -n '7,12p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
 }
 
 resolve_uv() {
@@ -90,6 +91,11 @@ cmd_run() {
     exit 1
   fi
   load_config
+  # The CLI prefers ANTHROPIC_API_KEY over its own login; a key kept in
+  # config.env for switching back to `direct` must not be billed here.
+  if [[ "${DEMAT_RUNNER:-}" == "agent_sdk" ]]; then
+    unset ANTHROPIC_API_KEY
+  fi
 
   local port="${DEMAT_PORT:-8701}"
   local health="http://127.0.0.1:$port/_stcore/health"
@@ -138,13 +144,25 @@ cmd_uninstall_app() {
   fi
 }
 
+# Runners (ADR 0017): `direct` calls the Anthropic API with ANTHROPIC_API_KEY;
+# `agent_sdk` drives the Claude Code CLI (`claude`) with its own login.
 write_config() {
-  local non_interactive="$1" api_key=""
+  local non_interactive="$1" runner="$2" api_key=""
   if [[ -f "$CONFIG_ENV" ]]; then
-    log "$CONFIG_ENV already exists; leaving it untouched."
+    if [[ -n "$runner" ]]; then
+      # Rewrite only the DEMAT_RUNNER line; the rest (the key) stays as is.
+      local tmp="$CONFIG_ENV.tmp"
+      install -m 600 /dev/null "$tmp"
+      { grep -v '^DEMAT_RUNNER=' "$CONFIG_ENV" || true; echo "DEMAT_RUNNER=$runner"; } >"$tmp"
+      mv "$tmp" "$CONFIG_ENV"
+      log "Set DEMAT_RUNNER=$runner in $CONFIG_ENV."
+    else
+      log "$CONFIG_ENV already exists; leaving it untouched."
+    fi
     return
   fi
-  if [[ "$non_interactive" -eq 0 && -t 0 ]]; then
+  runner="${runner:-direct}"
+  if [[ "$runner" == "direct" && "$non_interactive" -eq 0 && -t 0 ]]; then
     printf 'Anthropic API key (input hidden; leave empty to add later): '
     read -rs api_key
     echo
@@ -152,9 +170,11 @@ write_config() {
   # Created at mode 600 (not write-then-chmod): it holds the key.
   install -m 600 /dev/null "$CONFIG_ENV"
   {
-    echo "DEMAT_RUNNER=direct"
+    echo "DEMAT_RUNNER=$runner"
     echo "DEMAT_PORT=8701"
-    if [[ -n "$api_key" ]]; then
+    if [[ "$runner" == "agent_sdk" ]]; then
+      echo "# Uses the Claude Code CLI login; no API key needed."
+    elif [[ -n "$api_key" ]]; then
       # Single-quoted: config.env is `source`d as shell, and only single
       # quotes keep `$`, `#` and spaces literal. Embedded single quotes use
       # the close/escape/reopen trick.
@@ -163,14 +183,35 @@ write_config() {
       echo "# ANTHROPIC_API_KEY="
     fi
   } >"$CONFIG_ENV"
-  if [[ -z "$api_key" ]]; then
+  if [[ "$runner" == "direct" && -z "$api_key" ]]; then
     log "No API key set. Add it later in $CONFIG_ENV (ANTHROPIC_API_KEY=...)."
   fi
 }
 
 cmd_setup() {
-  local non_interactive=0
-  [[ "${1:-}" == "--non-interactive" ]] && non_interactive=1
+  local non_interactive=0 runner=""
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --non-interactive) non_interactive=1 ;;
+      --runner)
+        runner="${2:-}"
+        [[ $# -gt 1 ]] && shift
+        ;;
+      --runner=*) runner="${1#--runner=}" ;;
+      *)
+        echo "unknown setup option: $1" >&2
+        return 1
+        ;;
+    esac
+    shift
+  done
+  case "$runner" in
+    "" | direct | agent_sdk) ;;
+    *)
+      echo "error: --runner must be direct or agent_sdk" >&2
+      return 1
+      ;;
+  esac
   require_uv
 
   log "Data home: $DEMAT_HOME"
@@ -189,7 +230,7 @@ cmd_setup() {
     fi
   done
 
-  write_config "$non_interactive"
+  write_config "$non_interactive" "$runner"
 
   log "Installing Python dependencies into $UV_PROJECT_ENVIRONMENT"
   "$UV" sync --frozen --no-dev --directory "$CODE_ROOT"

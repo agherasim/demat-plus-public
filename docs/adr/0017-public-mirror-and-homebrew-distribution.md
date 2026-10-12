@@ -123,6 +123,25 @@ git clone git@github.com:agherasim/demat-knowledge-base.git ~/.demat/data/demat-
 Only users with access to that private repo can run it. `DEMAT_KB_DIR` still overrides the
 location. The app runs without the KB, and the KB-dependent tests skip.
 
+### 8. Update (2026-10-12): the `agent_sdk` runner is a supported install option
+
+`direct` stays the default. `demat setup --runner agent_sdk` writes `DEMAT_RUNNER=agent_sdk`
+and skips the key prompt; on an existing `config.env` it rewrites only that line. Making
+the CLI runner work from a Homebrew install needed two changes:
+
+- The CLI's working directory and its `.claude/skills/` links move from `CODE_ROOT` to
+  `DEMAT_HOME/agent` (`config.AGENT_WORKDIR`), a directory holding nothing else. The Cellar
+  stays exactly as installed. The agent's file access stays what it was: its working
+  directory plus `PAGES_DIR`/`RUNS_DIR`, never the DB, salt or uploads. The links are
+  absolute and recreated on every run, so a `brew upgrade` repoints them.
+- `demat run` unsets `ANTHROPIC_API_KEY` when the runner is `agent_sdk`. Otherwise a key
+  left in `config.env` would make the CLI bill the API instead of using its login.
+- The `.app` launcher adds `~/.local/bin`, where the Claude Code installer puts `claude`,
+  to the PATH.
+
+`scripts/check_install.py` reports, for the chosen runner, whether `claude` is on PATH or
+whether an API credential resolves.
+
 ## Consequences
 
 - Public links from ADRs to `docs/specs/` dangle in the mirror. That is accepted: the specs

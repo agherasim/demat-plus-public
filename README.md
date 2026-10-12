@@ -67,6 +67,11 @@ installed app runs with `DEMAT_RUNNER=direct` (the plain Anthropic Messages API)
 own API key, so it does not need the `claude` CLI. Pass `demat setup --non-interactive` to
 skip the key prompt and add the key to `config.env` later.
 
+If you already use Claude Code, run `demat setup --runner agent_sdk` instead. That runner
+uses the `claude` CLI and its login, so there is no API key to enter. Running it again on an
+existing install only switches `DEMAT_RUNNER` in `config.env`. The launcher finds `claude`
+in `/opt/homebrew/bin`, `/usr/local/bin` or `~/.local/bin`.
+
 The first setup needs network access: it downloads a managed CPython 3.13 and the
 dependencies.
 
